@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}Predict Delay - Flight Delay Predictor{% endblock %}
+
+{% block content %}
+<div class="predict-page">
+    <div class="page-header">
+        <h1>Predict Flight Delay</h1>
+        <p>Enter your flight details to get a delay prediction</p>
+    </div>
+
+    <div class="predict-container">
+        <!-- Prediction Form -->
+        <div class="form-card">
+            <form method="POST" class="predict-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="airline">Airline</label>
+                        <select name="airline" id="airline" required>
+                            <option value="">Select Airline</option>
+                            {% for airline in airlines %}
+                            <option value="{{ airline }}">{{ airline }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="origin">Origin Airport</label>
+                        <select name="origin" id="origin" required>
+                            <option value="">Select Origin</option>
+                            {% for airport in airports %}
+                            <option value="{{ airport }}">{{ airport }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="destination">Destination Airport</label>
+                        <select name="destination" id="destination" required>
+                            <option value="">Select Destination</option>
+                            {% for airport in airports %}
+                            <option value="{{ airport }}">{{ airport }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="booking_class">Booking Class</label>
+                        <select name="booking_class" id="booking_class">
+                            {% for cls in booking_classes %}
+                            <option value="{{ cls }}">{{ cls }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="hour">Departure Hour</label>
+                        <select name="hour" id="hour" required>
+                            {% for h in range(24) %}
+                            <option value="{{ h }}" {% if h == 12 %}selected{% endif %}>{{ '%02d:00'|format(h) }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="day_of_week">Day of Week</label>
+                        <select name="day_of_week" id="day_of_week" required>
+                            <option value="0">Monday</option>
+                            <option value="1">Tuesday</option>
+                            <option value="2">Wednesday</option>
+                            <option value="3">Thursday</option>
+                            <option value="4">Friday</option>
+                            <option value="5">Saturday</option>
+                            <option value="6">Sunday</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="month">Month</label>
+                        <select name="month" id="month" required>
+                            <option value="1">January</option>
+                            <option value="2">February</option>
+                            <option value="3">March</option>
+                            <option value="4">April</option>
+                            <option value="5">May</option>
+                            <option value="6">June</option>
+                            <option value="7">July</option>
+                            <option value="8">August</option>
+                            <option value="9">September</option>
+                            <option value="10">October</option>
+                            <option value="11">November</option>
+                            <option value="12">December</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-large btn-full">
+                    <span>🔮</span>
+                    <span>Predict Delay</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Prediction Result -->
+        {% if prediction %}
+        <div class="result-card {% if prediction == 'Delayed' %}result-delayed{% else %}result-ontime{% endif %}">
+            <div class="result-icon">
+                {% if prediction == 'Delayed' %}⚠️{% else %}✅{% endif %}
+            </div>
+            <div class="result-content">
+                <h2 class="result-title">
+                    {% if prediction == 'Delayed' %}
+                    Flight Likely Delayed
+                    {% else %}
+                    Flight Likely On-Time
+                    {% endif %}
+                </h2>
+                <div class="result-probability">
+                    <div class="prob-bar">
+                        <div class="prob-fill" style="width: {{ (probability * 100)|int }}%"></div>
+                    </div>
+                    <span class="prob-value">{{ (probability * 100)|int }}% delay probability</span>
+                </div>
+                <div class="result-tips">
+                    <h4>💡 Tips:</h4>
+                    {% if prediction == 'Delayed' %}
+                    <ul>
+                        <li>Consider booking an earlier flight</li>
+                        <li>Allow extra time for connections</li>
+                        <li>Check airline delay history</li>
+                        <li>Monitor weather conditions</li>
+                    </ul>
+                    {% else %}
+                    <ul>
+                        <li>Your flight timing looks good!</li>
+                        <li>Still check in early</li>
+                        <li>Monitor for last-minute changes</li>
+                    </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Info Section -->
+    <div class="info-section">
+        <h3>How Predictions Work</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-icon">🕐</span>
+                <h4>Time of Day</h4>
+                <p>Afternoon and evening flights have higher delay rates due to cascading delays</p>
+            </div>
+            <div class="info-item">
+                <span class="info-icon">📅</span>
+                <h4>Day & Season</h4>
+                <p>Fridays, Sundays, and holiday periods see more delays</p>
+            </div>
+            <div class="info-item">
+                <span class="info-icon">✈️</span>
+                <h4>Airline</h4>
+                <p>Different airlines have varying on-time performance records</p>
+            </div>
+            <div class="info-item">
+                <span class="info-icon">🌤️</span>
+                <h4>Weather</h4>
+                <p>Summer storms and winter weather impact delay rates</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

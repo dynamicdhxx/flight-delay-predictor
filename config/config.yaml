@@ -1,0 +1,114 @@
+# Flight Delay Prediction - Configuration File
+
+# Data Paths
+data:
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  external_dir: "data/external"
+  
+# Sample Data Generation
+sample_data:
+  n_flights: 50000
+  start_date: "2023-01-01"
+  end_date: "2023-12-31"
+  random_seed: 42
+
+# Feature Engineering
+features:
+  delay_threshold_minutes: 15
+  delay_categories:
+    on_time: 0
+    minor: 15
+    moderate: 30
+    severe: 60
+  
+# Classification
+classification:
+  test_size: 0.2
+  random_state: 42
+  cv_folds: 5
+  
+  # Handling imbalanced data
+  use_smote: true
+  smote_sampling_strategy: 0.8
+  
+  # Models to train
+  models:
+    - logistic_regression
+    - random_forest
+    - xgboost
+    - lightgbm
+  
+  # Hyperparameters
+  xgboost:
+    n_estimators: 200
+    max_depth: 6
+    learning_rate: 0.1
+    scale_pos_weight: 3
+    
+  lightgbm:
+    n_estimators: 200
+    max_depth: 6
+    learning_rate: 0.1
+    class_weight: balanced
+
+# Clustering
+clustering:
+  features:
+    - avg_departure_delay
+    - avg_arrival_delay
+    - delay_frequency
+    - total_flights
+    - weather_delay_pct
+  
+  # K-Means settings
+  kmeans:
+    n_clusters_range: [2, 10]
+    random_state: 42
+    n_init: 10
+
+# Frequent Itemset Mining
+frequent_itemsets:
+  min_support: 0.01
+  min_confidence: 0.5
+  min_lift: 1.5
+  max_itemset_length: 4
+
+# Forecasting
+forecasting:
+  target: "daily_delay_rate"
+  train_size: 0.8
+  
+  # SARIMA settings
+  sarima:
+    order: [1, 1, 1]
+    seasonal_order: [1, 1, 1, 7]
+  
+  # Prophet settings
+  prophet:
+    yearly_seasonality: true
+    weekly_seasonality: true
+    daily_seasonality: false
+    changepoint_prior_scale: 0.05
+
+# Visualization
+visualization:
+  style: "seaborn-v0_8-whitegrid"
+  figure_size: [12, 8]
+  dpi: 100
+  save_figures: true
+  figures_dir: "reports/figures"
+  
+  # Color palette
+  colors:
+    primary: "#2E86AB"
+    secondary: "#A23B72"
+    success: "#18A558"
+    warning: "#F18F01"
+    danger: "#C73E1D"
+    
+  # Delay status colors
+  delay_colors:
+    on_time: "#18A558"
+    delayed: "#C73E1D"
+

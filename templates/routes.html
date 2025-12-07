@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Route Analysis - Flight Delay Predictor{% endblock %}
+
+{% block content %}
+<div class="routes-page">
+    <div class="page-header">
+        <h1>Route Analysis</h1>
+        <p>Explore delay patterns across different flight routes</p>
+    </div>
+
+    <!-- Route Table -->
+    <div class="table-card">
+        <div class="table-header">
+            <h3>Top Routes by Traffic</h3>
+            <div class="table-legend">
+                <span class="legend-item good">● Low Delay</span>
+                <span class="legend-item medium">● Medium</span>
+                <span class="legend-item bad">● High Delay</span>
+            </div>
+        </div>
+        
+        {% if routes %}
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Route</th>
+                        <th>Flights</th>
+                        <th>Avg Delay</th>
+                        <th>Delay Rate</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for route in routes %}
+                    <tr>
+                        <td class="route-cell">
+                            <span class="route-icon">✈️</span>
+                            <span class="route-name">{{ route.route }}</span>
+                        </td>
+                        <td>{{ "{:,}".format(route.flights|int) }}</td>
+                        <td>
+                            <span class="delay-value {% if route.avg_delay > 15 %}high{% elif route.avg_delay > 5 %}medium{% else %}low{% endif %}">
+                                {{ "%.1f"|format(route.avg_delay) }} min
+                            </span>
+                        </td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill {% if route.delay_rate > 30 %}high{% elif route.delay_rate > 20 %}medium{% else %}low{% endif %}" 
+                                     style="width: {{ route.delay_rate|int }}%"></div>
+                            </div>
+                            <span class="progress-label">{{ "%.1f"|format(route.delay_rate) }}%</span>
+                        </td>
+                        <td>
+                            {% if route.delay_rate < 20 %}
+                            <span class="status-badge good">Reliable</span>
+                            {% elif route.delay_rate < 30 %}
+                            <span class="status-badge medium">Moderate</span>
+                            {% else %}
+                            <span class="status-badge bad">Problematic</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <span class="empty-icon">📭</span>
+            <h3>No Route Data Available</h3>
+            <p>Run the data processing notebooks first to generate route statistics</p>
+            <a href="{{ url_for('index') }}" class="btn btn-primary">Go to Dashboard</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Route Tips -->
+    <section class="tips-section">
+        <h2>Route Selection Tips</h2>
+        <div class="tips-grid">
+            <div class="tip-card">
+                <span class="tip-icon">🎯</span>
+                <h4>Direct Flights</h4>
+                <p>Non-stop flights have lower overall delay risk compared to connecting flights</p>
+            </div>
+            <div class="tip-card">
+                <span class="tip-icon">🏢</span>
+                <h4>Hub Airports</h4>
+                <p>Major hubs may have more delays but also more recovery options</p>
+            </div>
+            <div class="tip-card">
+                <span class="tip-icon">⏰</span>
+                <h4>First Flight Out</h4>
+                <p>The first flight of the day rarely has delays from previous flights</p>
+            </div>
+            <div class="tip-card">
+                <span class="tip-icon">📊</span>
+                <h4>Track History</h4>
+                <p>Some routes are consistently problematic - check the data before booking</p>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+

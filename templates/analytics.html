@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics - Flight Delay Predictor{% endblock %}
+
+{% block content %}
+<div class="analytics-page">
+    <div class="page-header">
+        <h1>Flight Analytics</h1>
+        <p>Deep dive into delay patterns and trends</p>
+    </div>
+
+    <!-- Stats Overview -->
+    <section class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon blue">📊</div>
+            <div class="stat-info">
+                <span class="stat-value">{{ "{:,}".format(stats.total_flights|default(0)) }}</span>
+                <span class="stat-label">Total Flights</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon red">⚠️</div>
+            <div class="stat-info">
+                <span class="stat-value">{{ stats.delay_rate|default(0) }}%</span>
+                <span class="stat-label">Delay Rate</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon orange">⏱️</div>
+            <div class="stat-info">
+                <span class="stat-value">{{ stats.avg_delay|default(0) }}m</span>
+                <span class="stat-label">Avg Delay</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green">✅</div>
+            <div class="stat-info">
+                <span class="stat-value">{{ stats.on_time_rate|default(0) }}%</span>
+                <span class="stat-label">On-Time Rate</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Charts -->
+    <section class="charts-section">
+        <div class="chart-card large">
+            <h3>Average Delay by Hour of Day</h3>
+            <canvas id="hourlyChart"></canvas>
+        </div>
+    </section>
+
+    <section class="charts-section">
+        <div class="chart-card">
+            <h3>Delay Distribution</h3>
+            <canvas id="distributionChart"></canvas>
+        </div>
+        <div class="chart-card">
+            <h3>Delay by Airline</h3>
+            <canvas id="airlineChart"></canvas>
+        </div>
+    </section>
+
+    <!-- Insights -->
+    <section class="insights-section">
+        <h2>Key Insights</h2>
+        <div class="insights-grid">
+            <div class="insight-card">
+                <div class="insight-icon">🌅</div>
+                <h4>Best Time to Fly</h4>
+                <p>Early morning flights (6-9 AM) have the lowest delay rates</p>
+            </div>
+            <div class="insight-card">
+                <div class="insight-icon">🌆</div>
+                <h4>Worst Time to Fly</h4>
+                <p>Evening flights (5-8 PM) experience the most delays</p>
+            </div>
+            <div class="insight-card">
+                <div class="insight-icon">📆</div>
+                <h4>Best Day</h4>
+                <p>Tuesday and Wednesday have fewer delays than weekends</p>
+            </div>
+            <div class="insight-card">
+                <div class="insight-icon">🗓️</div>
+                <h4>Best Season</h4>
+                <p>Spring and Fall have the most reliable flight schedules</p>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const hourlyData = {{ charts.hourly|tojson|safe }};
+    const distData = {{ charts.distribution|tojson|safe }};
+    const airlineData = {{ charts.airline|tojson|safe }};
+    
+    // Hourly Chart
+    if (hourlyData.labels && hourlyData.labels.length > 0) {
+        new Chart(document.getElementById('hourlyChart'), {
+            type: 'bar',
+            data: {
+                labels: hourlyData.labels,
+                datasets: [{
+                    label: 'Avg Delay (min)',
+                    data: hourlyData.values,
+                    backgroundColor: hourlyData.values.map(v => v > 15 ? '#ef4444' : v > 5 ? '#f59e0b' : '#10b981'),
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    }
+    
+    // Distribution Chart
+    if (distData.values && distData.values.some(v => v > 0)) {
+        new Chart(document.getElementById('distributionChart'), {
+            type: 'pie',
+            data: {
+                labels: distData.labels,
+                datasets: [{
+                    data: distData.values,
+                    backgroundColor: ['#10b981', '#22c55e', '#f59e0b', '#ef4444', '#dc2626']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    }
+    
+    // Airline Chart
+    if (airlineData.labels && airlineData.labels.length > 0) {
+        new Chart(document.getElementById('airlineChart'), {
+            type: 'bar',
+            data: {
+                labels: airlineData.labels,
+                datasets: [{
+                    label: 'Avg Delay (min)',
+                    data: airlineData.values,
+                    backgroundColor: '#6366f1',
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+</script>
+{% endblock %}
+

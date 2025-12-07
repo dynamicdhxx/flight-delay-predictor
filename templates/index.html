@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Flight Delay Predictor{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Flight Delay <span class="gradient-text">Intelligence</span></h1>
+            <p>Predict delays, analyze patterns, and make smarter travel decisions</p>
+            <a href="{{ url_for('predict') }}" class="btn btn-primary btn-large">
+                <span>Predict Now</span>
+                <span class="btn-arrow">→</span>
+            </a>
+        </div>
+        <div class="hero-visual">
+            <div class="floating-card card-1">
+                <span class="card-icon">🛫</span>
+                <span class="card-value">{{ stats.total_flights|default(0) }}</span>
+                <span class="card-label">Flights Analyzed</span>
+            </div>
+            <div class="floating-card card-2">
+                <span class="card-icon">⏱️</span>
+                <span class="card-value">{{ stats.avg_delay|default(0) }}m</span>
+                <span class="card-label">Avg Delay</span>
+            </div>
+            <div class="floating-card card-3">
+                <span class="card-icon">✅</span>
+                <span class="card-value">{{ stats.on_time_rate|default(0) }}%</span>
+                <span class="card-label">On-Time</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Cards -->
+    <section class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon blue">📊</div>
+            <div class="stat-info">
+                <span class="stat-value">{{ "{:,}".format(stats.total_flights|default(0)) }}</span>
+                <span class="stat-label">Total Flights</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon red">⚠️</div>
+            <div class="stat-info">
+                <span class="stat-value">{{ stats.delay_rate|default(0) }}%</span>
+                <span class="stat-label">Delay Rate</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green">🛤️</div>
+            <div class="stat-info">
+                <span class="stat-value">{{ stats.total_routes|default(0) }}</span>
+                <span class="stat-label">Routes</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon purple">🏢</div>
+            <div class="stat-info">
+                <span class="stat-value">{{ stats.total_airlines|default(0) }}</span>
+                <span class="stat-label">Airlines</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Charts Section -->
+    <section class="charts-section">
+        <div class="chart-card">
+            <h3>Delays by Hour</h3>
+            <canvas id="hourlyChart"></canvas>
+        </div>
+        <div class="chart-card">
+            <h3>Delay Distribution</h3>
+            <canvas id="distributionChart"></canvas>
+        </div>
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="quick-actions">
+        <h2>Quick Actions</h2>
+        <div class="action-grid">
+            <a href="{{ url_for('predict') }}" class="action-card">
+                <span class="action-icon">🔮</span>
+                <span class="action-title">Predict Delay</span>
+                <span class="action-desc">Check if your flight will be delayed</span>
+            </a>
+            <a href="{{ url_for('analytics') }}" class="action-card">
+                <span class="action-icon">📈</span>
+                <span class="action-title">View Analytics</span>
+                <span class="action-desc">Explore delay patterns and trends</span>
+            </a>
+            <a href="{{ url_for('routes') }}" class="action-card">
+                <span class="action-icon">🗺️</span>
+                <span class="action-title">Route Analysis</span>
+                <span class="action-desc">Find the best routes to fly</span>
+            </a>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Chart data from Flask
+    const hourlyData = {{ charts.hourly|tojson|safe }};
+    const distData = {{ charts.distribution|tojson|safe }};
+    
+    // Hourly Chart
+    if (hourlyData.labels && hourlyData.labels.length > 0) {
+        new Chart(document.getElementById('hourlyChart'), {
+            type: 'line',
+            data: {
+                labels: hourlyData.labels,
+                datasets: [{
+                    label: 'Avg Delay (min)',
+                    data: hourlyData.values,
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    }
+    
+    // Distribution Chart
+    if (distData.values && distData.values.some(v => v > 0)) {
+        new Chart(document.getElementById('distributionChart'), {
+            type: 'doughnut',
+            data: {
+                labels: distData.labels,
+                datasets: [{
+                    data: distData.values,
+                    backgroundColor: ['#10b981', '#22c55e', '#f59e0b', '#ef4444', '#dc2626']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}
+
